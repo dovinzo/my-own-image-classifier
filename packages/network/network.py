@@ -16,6 +16,9 @@ class Network:
 		activation_function_names (list) - La liste des noms (str) de chaque fonction d'activation à utiliser pour chaque couche
 
 	Méthodes:
+		activation_function - Applique la fonction d'activation
+		derivated_activation_function - Applique la fonction d'activation dérivée
+		feedforward - Effectue la propagation avant (forward propagation) à travers toutes les couches du réseau
 		train - Entraîne le modèle sur les données d'entraînement
 
 	Exemple:
@@ -55,12 +58,30 @@ class Network:
 			return 1 / (1 + np.exp(-z))
 		elif activation_function_name == 'tanh':
 			return np.tanh(z)
-		elif activation_function_name == 'softmax':
-			exps = np.exp(z)
-			return exps / np.sum(exps)
 		else:
 			raise ValueError(f"Fonction d'activation non prise en charge: {activation_function_name}")
-	
+
+	def derivated_activation_function(self, z, activation_function_name):
+		"""
+		derivated_activation_function - Applique la fonction d'activation dérivée
+
+		Entrées:
+			z (vecteur - tableau 2D NumPy) - Le vecteur avant application de la fonction d'activation dérivée
+			activation_function_name (str) - Le nom de la fonction d'activation dont on applique sa dérivée
+
+		Sortie:
+			derivated_activation (vecteur - tableau 2D NumPy) - Le vecteur après application de la fonction d'activation dérivée
+		"""
+
+		if activation_function_name == 'relu':
+			return np.where(z <= 0, 0, 1)
+		elif activation_function_name == 'sigmoid':
+			return np.exp(-z) / (1 + np.exp(-z))**2
+		elif activation_function_name == 'tanh':
+			return 1 - np.tanh(z)**2
+		else:
+			raise ValueError(f"Fonction d'activation non prise en charge: {activation_function_name}")
+
 	def feedforward(self, input):
 		"""
 		feedforward - Effectue la propagation avant (forward propagation) à travers toutes les couches du réseau
