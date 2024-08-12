@@ -17,7 +17,7 @@ class Network:
 
 	Méthodes:
 		activation_function - Applique la fonction d'activation
-		derivated_activation_function - Applique la fonction d'activation dérivée
+		activation_function_derivative - Applique la fonction d'activation dérivée
 		feedforward - Effectue la propagation avant (forward propagation) à travers toutes les couches du réseau
 		train - Entraîne le modèle sur les données d'entraînement
 
@@ -44,12 +44,18 @@ class Network:
 		"""
 		activation_function - Applique la fonction d'activation
 
+		Information:
+			- Voici la liste des noms possibles pour la fonction d'activation :
+				'relu'
+				'sigmoid'
+				'tanh'
+
 		Entrées:
 			z (vecteur - tableau 2D NumPy) - Le vecteur avant application de la fonction d'activation
 			activation_function_name (str) - Le nom de la fonction d'activation à appliquer
 
 		Sortie:
-			activation (vecteur - tableau 2D NumPy) - Le vecteur après application de la fonction d'activation
+			(vecteur - tableau 2D NumPy) - Le vecteur après application de la fonction d'activation
 		"""
 
 		if activation_function_name == 'relu':
@@ -61,16 +67,22 @@ class Network:
 		else:
 			raise ValueError(f"Fonction d'activation non prise en charge: {activation_function_name}")
 
-	def derivated_activation_function(self, z, activation_function_name):
+	def activation_function_derivative(self, z, activation_function_name):
 		"""
-		derivated_activation_function - Applique la fonction d'activation dérivée
+		activation_function_derivative - Applique la fonction d'activation dérivée
+
+		Information:
+			- Voici la liste des noms possibles pour la fonction d'activation :
+				'relu'
+				'sigmoid'
+				'tanh'
 
 		Entrées:
 			z (vecteur - tableau 2D NumPy) - Le vecteur avant application de la fonction d'activation dérivée
 			activation_function_name (str) - Le nom de la fonction d'activation dont on applique sa dérivée
 
 		Sortie:
-			derivated_activation (vecteur - tableau 2D NumPy) - Le vecteur après application de la fonction d'activation dérivée
+			(vecteur - tableau 2D NumPy) - Le vecteur après application de la fonction d'activation dérivée
 		"""
 
 		if activation_function_name == 'relu':
@@ -82,25 +94,25 @@ class Network:
 		else:
 			raise ValueError(f"Fonction d'activation non prise en charge: {activation_function_name}")
 
-	def feedforward(self, input):
+	def feedforward(self, input_vector):
 		"""
 		feedforward - Effectue la propagation avant (forward propagation) à travers toutes les couches du réseau
 
 		Entrée:
-			input (vecteur - tableau 2D NumPy) - Les données d'entrée du réseau
+			input_vector (vecteur - tableau 2D NumPy) - Les données d'entrée du réseau
 
 		Sortie:
-			output (vecteur - tableau 2D NumPy) - Les sorties du réseau après la propagation avant
+			output_vector (vecteur - tableau 2D NumPy) - Les sorties du réseau après la propagation avant
 		"""
 
-		activation = input
+		activation = input_vector
 
 		for bias, weight, activation_function_name in zip(self.biases, self.weights, self.activation_function_names):
 			activation = self.activation_function(np.dot(weight, activation) + bias, activation_function_name)
 
-		output = activation
+		output_vector = activation
 
-		return output
+		return output_vector
 	
 	def train(self, training_data, epochs, learning_rate, mini_batch_size):
 		"""
@@ -110,9 +122,51 @@ class Network:
 
 		Entrées:
 			training_data (list) - La liste des données d'entraînement (x, y) (tuple), où :
-							x (vecteur - tableau 2D NumPy) - Les données d'entrée
-							y (vecteur - tableau 2D NumPy) - Les données de sortie souhaitées
+							x (vecteur - tableau 2D NumPy) - La donnée d'entrée
+							y (vecteur - tableau 2D NumPy) - La donnée de sortie souhaitée
 			epochs (int) - Le nombre d'époques d'entraînement
 			learning_rate (float) - Le taux d'apprentissage
 			mini_batch_size (int) - La taille d'un mini-batch
 		"""
+
+	def cost_function_derivative(self, output_activation_vector, y):
+		"""
+		cost_function_derivative - Calcule le vecteur dérivée partielle de la fonction de coût (pour une seule donnée d'entrée) par rapport à chaque coefficient du vecteur activation de la sortie
+
+		Information:
+			- La fonction de coût utilisée est l'erreur quadratique moyenne (MSE)
+
+		Entrées:
+			output_activation_vector (vecteur - tableau 2D NumPy) - Le vecteur activation de la sortie
+			y (vecteur - tableau 2D NumPy) - Le vecteur de la donnée de sortie souhaitée
+
+		Sortie:
+			(vecteur - tableau 2D NumPy) - Le résultat du calcul
+		"""
+
+		return output_activation_vector - y
+
+	def backpropagation(self, x, y):
+		bias_gradients = [np.zeros(bias.shape) for bias in self.biases]
+		weight_gradients = [np.zeros(weight.shape) for weight in self.weights]
+
+		activation = x
+		activations = [x]
+		weighted_inputs = []
+		for bias, weight, activation_function_name in zip(self.biases, self.weights, self.activation_function_names):
+			weighted_input = np.dot(weight, activation) + bias
+			weighted_inputs.append(weighted_input)
+			activation = self.activation_function(weighted_input, activation_function_name)
+			activations.append(activation)
+
+		error = self.cost_function_derivative(activations[-1], y) * self.activation_function_derivative(weighted_inputs[-1], self.activation_function_names[-1])
+		bias_gradients[-1] = error
+		weight_gradients[-1] = np.dot(error, activations[-2].transpose())
+
+		for l in range(L-1, 1, -1):
+			weighted_input = weighted_inputs[l-1]
+			error = np.dot(self.weights[l].tanspose(), error) * self.activation_function_derivative(weighted_input, self.activation_function_names[l-1])
+			bias_gradients[l-1] = error
+			weight_gradients[l-1] = np.dot(error, activations[l-2].transpose())
+
+		return (bias_gradients, weight_gradients)
