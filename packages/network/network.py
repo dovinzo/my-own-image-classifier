@@ -170,3 +170,16 @@ class Network:
 			weight_gradients[l-1] = np.dot(error, activations[l-2].transpose())
 
 		return (bias_gradients, weight_gradients)
+
+	def update_parameters_mini_batch(self, mini_batch, learning_rate):
+		bias_gradients = [np.zeros(bias.shape) for bias in self.biases]
+		weight_gradients = [np.zeros(weight.shape) for weight in self.weights]
+		m = len(mini_batch)
+
+		for x, y in mini_batch:
+			bias_gradients_for_one_data, weight_gradients_for_one_data = self.backpropagation(x, y)
+			bias_gradients = [bias_gradient + bias_gradient_for_one_data for bias_gradient, bias_gradient_for_one_data in zip(bias_gradients, bias_gradients_for_one_data)]
+			weight_gradients = [weight_gradient + weight_gradient_for_one_data for weight_gradient, weight_gradient_for_one_data in zip(weight_gradients, weight_gradients_for_one_data)]
+
+		self.biases = [bias - (learning_rate / m) * bias_gradient for bias, bias_gradient in zip(self.biases, bias_gradients)]
+		self.weights = [weight - (learning_rate / m) * weight_gradient for weight, weight_gradient in zip(self.weights, weight_gradients)]
