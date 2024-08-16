@@ -1,4 +1,5 @@
 import numpy as np
+import random
 
 class Network:
 	"""
@@ -128,6 +129,14 @@ class Network:
 			learning_rate (float) - Le taux d'apprentissage
 			mini_batch_size (int) - La taille d'un mini-batch
 		"""
+
+		n = len(training_data)
+		for j in range(epochs):
+			random.shuffle(training_data)
+			mini_batches = [training_data[k:k+mini_batch_size] for k in range(0, n, mini_batch_size)]
+			for mini_batch in mini_batches:
+				self.update_parameters_mini_batch(mini_batch, learning_rate)
+			print("Epoch {0} complete".format(j))
 
 	def cost_function_derivative(self, output_activation_vector, y):
 		"""
