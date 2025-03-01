@@ -1,3 +1,5 @@
 # My Own Image Classifier
 
-Ce projet implémente un **classifieur d'images** en implémentant/utilisant un réseau de neurones de type **Multilayer Perceptron (MLP)**. Le modèle est conçu pour classer des images en 10 catégories, telles que des avions, des voitures et des animaux. Il est entrainé et testé à partir du jeu de données CIFAR-10.
+L'objectif de ce projet est de concevoir un réseau de neurones de type "Multilayer Perceptron" (MLP) entièrement à partir de zéro, puis (d'essayer) de l'adapter pour en faire un classificateur d'images en l'entraînant sur le jeu de données CIFAR-10.
+
+Malheureusement, je n'ai pas réussi à l'entraîner, bien que tout semble fonctionnel. Il m'aurait fallu plus de puissance de calcul pour identifier l'origine du problème.
